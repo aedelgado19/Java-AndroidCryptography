@@ -1,0 +1,402 @@
+package com.example.a399109.androidcryptography;
+
+//imports
+import android.app.Activity;
+import android.content.DialogInterface;
+//import android.support.v7.app.AlertDialog;
+import android.graphics.Color;
+import android.os.Bundle;
+import android.provider.Telephony;
+import android.text.InputType;
+import android.view.View;
+import static java.lang.Character.toUpperCase;
+import static java.time.temporal.TemporalQueries.offset;
+
+//xml tings
+import android.widget.ImageButton;
+import android.widget.LinearLayout;
+import android.widget.RadioGroup;
+import android.widget.EditText;
+import android.widget.TextView;
+import android.widget.Toast;
+import android.widget.Button;
+import android.widget.RadioButton;
+
+import com.example.a399109.androidcryptography.R;
+
+import java.util.Random;
+
+
+
+public class AndroidCrypt_activity_main extends Activity implements View.OnClickListener {
+   //set up app view
+   Button encrypt;
+   Button decrypt;
+   EditText inputText;
+   TextView newText;
+   ImageButton cryptographydinowithshadesandflowers;
+   LinearLayout currentLayout;
+
+   //radio
+   RadioGroup radioGroup;
+   RadioButton scytaleRB;
+   RadioButton caesarRB;
+   RadioButton vinegarRB;
+
+   //caesar
+   int shiftInt = 0;
+   String input;
+   EditText shiftText;
+   String temp;
+
+   //vinegar
+   String keyword = "a";
+   EditText keywordET;
+
+   //scytale
+   EditText numRows;
+   int numberOfRows;
+   int numberOfColumns;
+
+   @Override
+   protected void onCreate(Bundle savedInstanceState) {
+       super.onCreate(savedInstanceState);
+       setContentView(R.layout.activity_android_crypt_main);
+
+       //onClickListeners
+       encrypt = (Button) this.findViewById(R.id.button1);
+       encrypt.setOnClickListener(this);
+       decrypt = (Button) this.findViewById(R.id.button2);
+       decrypt.setOnClickListener(this);
+
+       //give each identified thing its own name for the main (different from xml)
+       radioGroup = (RadioGroup) this.findViewById(R.id.radioGroup);
+       scytaleRB = (RadioButton) this.findViewById(R.id.scytaleRB);
+       caesarRB = (RadioButton) this.findViewById(R.id.caesarRB);
+       vinegarRB = (RadioButton) this.findViewById(R.id.vinegarRB);
+       newText = (TextView) this.findViewById(R.id.textViewNewText);
+       inputText = (EditText) this.findViewById(R.id.editTextEnterTextHere);
+       shiftText = (EditText) this.findViewById(R.id.shiftET);
+       keywordET = (EditText) this.findViewById(R.id.keywordET);
+       numRows = (EditText) this.findViewById(R.id.RowsET);
+
+       //dino related tings
+       cryptographydinowithshadesandflowers = (ImageButton) this.findViewById(R.id.imageButton1);
+       cryptographydinowithshadesandflowers.setOnClickListener(this);
+       currentLayout = (LinearLayout) this.findViewById(R.id.layout);
+   }
+
+   public void onRadioClicked(View view) {
+       if (view.equals(scytaleRB)) {
+           shiftText.setFocusable(false); //.setFocusable(false) cancel's the program's ability to accept user input from the specified editText
+           keywordET.setFocusable(false);
+           //choose column height
+           setScytaleUp();
+       }
+       if (view.equals(caesarRB)) {
+           keywordET.setFocusable(false);
+           numRows.setFocusable(false);
+           //set shift
+           setShift();
+       }
+
+    if (view.equals(vinegarRB)) {
+        //choose keyword
+        setKeyword();
+        shiftText.setFocusable(false);
+        numRows.setFocusable(false);
+    }
+
+   }
+
+   @Override
+   public void onClick(View v) {
+
+       if (v.equals(encrypt)) {
+
+           //caesar cipher
+           if (caesarRB.isChecked()) {
+               input = String.valueOf(inputText.getText());
+               encryptCaesar();
+           }
+
+           //scytale cipher
+           if (scytaleRB.isChecked()) {
+               input = String.valueOf(inputText.getText());
+               encryptScytale();
+           }
+
+           //vinegar cipher
+           if (vinegarRB.isChecked()){
+               input = String.valueOf(inputText.getText());
+               //encryptVinegar();
+           }
+       }
+
+       if (v.equals(decrypt)) {
+
+           //caesar cipher
+           if (caesarRB.isChecked()) {
+               input = String.valueOf(inputText.getText());
+               decryptCaesar();
+           }
+
+           //scytale cipher
+           if (scytaleRB.isChecked()) {
+               input = String.valueOf(inputText.getText());
+               decryptScytale();
+           }
+           if(vinegarRB.isChecked()){
+               input = String.valueOf(inputText.getText());
+               //decryptVinegar();
+           }
+       }
+       if(v.equals(cryptographydinowithshadesandflowers)){
+           Random rnd = new Random();
+           int backgroundColor = Color.argb(255, rnd.nextInt(256), rnd.nextInt(256), rnd.nextInt(256));
+           v.setBackgroundColor(backgroundColor);
+       }
+
+   }
+
+
+   public String encryptCaesar() {
+       setCaesarUp();
+
+       //if shift is greater than 26 or less than 0, make edits accordingly
+       if (shiftInt > 26) {
+           shiftInt = shiftInt % 26;
+       } else if (shiftInt < 0) {
+           shiftInt = (shiftInt % 26) + 26;
+       }
+
+       String cipherText = "";
+       int length = input.length();
+
+       //loop through plainText and shift each letter
+       for (int i = 0; i < input.length(); i++) {
+
+           char ch = input.charAt(i);
+           ch = toUpperCase(ch); //make plainText to all upper case
+
+           if (Character.isLetter(ch) && ch != 32) { //32 is a space
+               char c = (char) (ch + shiftInt); //cast as char, add shift
+
+               if (c > 90) { //90 is Z
+                   cipherText += (char) (c - 26);
+               } else {
+                   cipherText += c;
+
+               }
+           }
+       }
+       newText.setText(cipherText);
+       return cipherText;
+   }
+
+   public void decryptCaesar() {
+       setCaesarUp();
+       String encryptedText = "";
+       //if shift is greater than 26 or less than 0, make edits accordingly
+       if (shiftInt > 26) {
+           shiftInt = shiftInt % 26;
+       } else if (shiftInt < 0) {
+           shiftInt = (shiftInt % 26) + 26;
+       }
+
+       //loop through input and cast each case
+       for (int i = 0; i < input.length(); i++) {
+           char ch = input.charAt(i);
+           ch = toUpperCase(ch); //make plainText to all upper case
+
+           if (Character.isLetter(ch) && ch != 32) { //32 is a space
+               if ((ch - shiftInt) < 65) { //when you subtract the shift, and it's less than 65 (65=A)
+                   int temp = ((int) ch - shiftInt) + 26; //add 26 to it
+                   encryptedText += (char) temp; //cast as char and assign to encryptedText
+               } else {
+                   //just subtract shift to return to original message if it's normal
+                   encryptedText += (char) ((int) ch - shiftInt);
+               }
+
+           }//end if isLetter
+       } //end for loop
+
+       //set to upper case and print out
+       encryptedText = encryptedText.toUpperCase();
+       newText.setText(encryptedText);
+   }
+
+   public void encryptScytale() {
+       setScytaleUp();
+       String encryptedText = "";
+       int temp = 0;
+       int j = 0;
+       numberOfColumns = (int)Math.ceil(input.length()/(double)numberOfRows);
+       char[][] array = new char[numberOfRows][numberOfColumns];
+       char[] fixedCharacters = new char[input.length()];
+
+       // Bug: Make sure you detect when the user forgets to enter the number of rows, it otherwise crashes
+
+       for (int w = 0; w < input.length(); w++) { //create new array to store all legal characters (uppercase, no space)
+           char ch = input.charAt(w);
+           ch = toUpperCase(ch); //make plainText to all upper case
+           if (Character.isLetter(ch) && ch != 32) { //32 is space
+               fixedCharacters[j] = ch; // BUG! When you skip a space, w gets incremented like usual but then fixedCharacters[w] is out of sync
+               j++;
+           }
+       }
+       for (int i = 0; i < numberOfRows; i++) { //keep within number of columns
+           for (int a = 0; a < numberOfColumns; a++) { //keep within number of rows
+               if (temp < j) { //if temp is less than the length of the inputted text
+                   array[i][a] = fixedCharacters[temp];
+                   temp++;
+               } else {
+                   array[i][a] = '@'; //fill the space with an @
+                   temp++;
+               }
+           }
+       }
+
+       //for printing out array:
+       for (int i = 0; i < numberOfColumns; i++) { //keep within num rows
+           for (int x = 0; x < numberOfRows; x++) { //keep within num col
+               if (array[x][i] != 64) { //64 is @
+                   encryptedText += array[x][i]; //add to array[][]
+               }
+           }
+       }
+       newText.setText(encryptedText);
+       return;
+   }
+
+   public void decryptScytale() {
+       int temp = 0;
+       int counter = 0;
+       String decyptedText = "";
+       int b = 0;
+       numberOfColumns = (int)Math.ceil(input.length()/(double)numberOfRows);
+       char[][] array = new char[numberOfRows][numberOfColumns];
+       char[] fixedCharacters = new char[input.length()];
+
+       for (int w = 0; w < input.length(); w++) { //create new array to store all legal characters (uppercase, no space)
+           char ch = input.charAt(w);
+           ch = toUpperCase(ch); //make plainText to all upper case
+           if (Character.isLetter(ch) && ch != 32) { //32 is space
+               fixedCharacters[b] = ch; // BUG! When you skip a space, w gets incremented like usual but then fixedCharacters[w] is out of sync
+               b++;
+           }
+       }
+
+       for (int i = 0; i < numberOfRows; i++) {
+           for (int j = 0; j < numberOfColumns; j++) {
+               if (array[j][i] == '@') {
+                   j++;
+               } else if (counter < input.length()) {
+                   array[j][i] = input.charAt(counter);
+                   counter++;
+               } else {
+                   array[j][i] = '@';
+                   counter++;
+               }
+           }
+       }
+       //print out new array:
+       for (int i = 0; i < numberOfRows; i++) {
+           for (int j = 0; j < numberOfColumns; j++) {
+               decyptedText += array[j][i];
+           }
+       }
+       newText.setText(decyptedText);
+       return;
+   }
+
+
+  /*public void encryptVinegar() {
+       String uppercaseString = "";
+       String encryptedText = "";
+       for (int i = 0; i < input.length(); i++) { //make uppercase and add to uppercase string
+           char ch = input.charAt(i);
+           ch = toUpperCase(ch);
+           uppercaseString += ch;
+       }
+       int length = uppercaseString.length();
+       int x = 0;
+
+       for (int j = 0; j < length; j++) {
+           char temp = input.charAt(j);
+           if (Character.isLetter(temp)){
+
+               temp = (char)(temp + wot % 26); //this might not be right
+               if ((int) temp > 90){
+                   temp = (char)(temp - 26);
+               }
+           }
+
+           encryptedText += temp;
+           x++;
+       }
+
+       newText.setText(encryptedText);
+   }
+
+   public void decryptVinegar(){
+       String encryptedText = "";
+       int length = input.length();
+       String uppercaseString = "";
+       for (int i = 0; i < length; i++) { // uppercase
+           char ch = input.charAt(i);
+           ch = toUpperCase(ch);
+           uppercaseString += ch;
+       }
+       int stringLength = uppercaseString.length();
+       int lol = 0;
+       int count = 0;
+
+       for (int x = 0; x < stringLength; x++) {
+           int wordShift = keyword[count % keyword.length()] - 65; //65 is capital A
+           char c = uppercaseString.charAt(lol);
+           if (Character.isLetter(c)){
+               count++;
+               c = (char)(temp - wordShift % 26);
+               if((int) c < 65) //if less than A (65)
+                   //add 26 to keep within range of alphabet
+                   c = (char)(c +26);
+           }
+
+           encryptedText += c;
+           lol++; //keep looping through keyword
+       }
+       newText.setText(encryptedText);
+       }*/
+
+       public void setScytaleUp () { //get number of rows from user
+           temp = numRows.getText().toString();
+           numberOfRows = Integer.parseInt(temp);
+           input = inputText.getText().toString();
+       }
+
+       public void setCaesarUp () { //get shift from user
+           temp = shiftText.getText().toString();
+           shiftInt = Integer.parseInt(temp);
+           input = inputText.getText().toString();
+       }
+
+       public void setShift () {
+           final EditText input = new EditText(this);
+           temp = input.getText().toString();
+           shiftInt = Integer.parseInt(temp);
+       }
+
+       public void setKeyword () {
+           temp = keywordET.getText().toString();
+           //keyword = Integer.parseInt(temp);
+           input = inputText.getText().toString();
+
+       }
+}
+
+
+
+
+
+
